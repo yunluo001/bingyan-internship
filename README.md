@@ -20,7 +20,7 @@
 - 浏览器：Chrome / Edge / Firefox
 - 不需要 Node.js，前端是静态文件，直接由 Go 服务托管
 
-### 方式一：双击 `start.bat`（Windows 最省事）
+### 方式一：双击 `start.bat`（Windows 环境）
 
 `start.bat` 会自动：
 
