@@ -1,0 +1,438 @@
+/* ==========================================================================
+   base.css — reset, design tokens, theming, app shell
+   Every colour used by the app is declared here as a semantic variable so a
+   theme swap is a single attribute write on <html>.
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html,
+body {
+	height: 100%;
+}
+
+body {
+	margin: 0;
+	font-family:
+		-apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+		sans-serif;
+	font-size: 15px;
+	line-height: 1.55;
+	color: var(--text);
+	background: var(--bg);
+	-webkit-font-smoothing: antialiased;
+	overflow: hidden;
+}
+
+button,
+input,
+textarea,
+select {
+	font: inherit;
+	color: inherit;
+}
+
+button {
+	cursor: pointer;
+}
+
+/*
+ * Caret browsing (开启后按 F7 切换) 会在任意可点击/可聚焦区域放一个
+ * 文本插入光标。它不是页面 UI，但在截图里会很突兀。非输入区域不显示
+ * 这个光标；真正的输入框和文本域仍保留正常光标。
+ */
+:where(button, a, div, span, li, p, h1, h2, h3, article, section, header, footer, main, label) {
+	caret-color: transparent;
+}
+
+input,
+textarea,
+select,
+[contenteditable="true"] {
+	caret-color: auto;
+}
+
+h1,
+h2,
+h3,
+p,
+ul,
+ol {
+	margin: 0;
+}
+
+ul,
+ol {
+	padding: 0;
+	list-style: none;
+}
+
+img {
+	display: block;
+	max-width: 100%;
+}
+
+/* Components set `display` themselves, which would beat the UA rule for
+   [hidden]; this keeps the attribute authoritative everywhere. */
+[hidden] {
+	display: none !important;
+}
+
+svg {
+	display: block;
+}
+
+::selection {
+	background: color-mix(in srgb, var(--accent) 32%, transparent);
+}
+
+/* --------------------------------------------------------------------------
+   Tokens
+   -------------------------------------------------------------------------- */
+
+:root {
+	--radius-xl: 24px;
+	--radius-lg: 18px;
+	--radius: 12px;
+	--radius-sm: 9px;
+
+	--gap-1: 6px;
+	--gap-2: 10px;
+	--gap-3: 16px;
+	--gap-4: 22px;
+	--gap-5: 30px;
+
+	--topbar-h: 64px;
+	--stage-pad: clamp(16px, 2.4vw, 30px);
+
+	--ease: cubic-bezier(0.22, 0.8, 0.28, 1);
+	--ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+	--font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+/* Accent palettes ---------------------------------------------------------- */
+
+[data-accent="pink"] {
+	--accent: #fb7299;
+	--accent-strong: #e8467a;
+	--accent-ink: #ffffff;
+	--accent-soft-light: #ffe3ec;
+	--accent-soft-dark: rgba(251, 114, 153, 0.22);
+	--accent-tint-light: rgba(251, 114, 153, 0.12);
+	--accent-tint-dark: rgba(251, 114, 153, 0.18);
+}
+
+[data-accent="violet"] {
+	--accent: #8b5cf6;
+	--accent-strong: #7137e8;
+	--accent-ink: #ffffff;
+	--accent-soft-light: #ece4ff;
+	--accent-soft-dark: rgba(139, 92, 246, 0.24);
+	--accent-tint-light: rgba(139, 92, 246, 0.12);
+	--accent-tint-dark: rgba(139, 92, 246, 0.2);
+}
+
+[data-accent="ocean"] {
+	--accent: #2f9ee0;
+	--accent-strong: #1a7cbb;
+	--accent-ink: #ffffff;
+	--accent-soft-light: #ddefff;
+	--accent-soft-dark: rgba(47, 158, 224, 0.24);
+	--accent-tint-light: rgba(47, 158, 224, 0.12);
+	--accent-tint-dark: rgba(47, 158, 224, 0.2);
+}
+
+[data-accent="mint"] {
+	--accent: #12b981;
+	--accent-strong: #059669;
+	--accent-ink: #ffffff;
+	--accent-soft-light: #d9f7ec;
+	--accent-soft-dark: rgba(18, 185, 129, 0.24);
+	--accent-tint-light: rgba(18, 185, 129, 0.12);
+	--accent-tint-dark: rgba(18, 185, 129, 0.2);
+}
+
+/* Light -------------------------------------------------------------------- */
+
+:root,
+[data-theme="light"] {
+	color-scheme: light;
+
+	--bg: #f4f5fa;
+	--bg-glow-a: #ffd9e6;
+	--bg-glow-b: #dbe4ff;
+	--surface: #ffffff;
+	--surface-2: #f7f8fc;
+	--surface-3: #eef0f7;
+	/*
+	 * Pre-mixed glass colours instead of `color-mix()` at every use site: the
+	 * browser then has nothing to recompute for ~200 elements when the theme
+	 * flips, which is what made the light/dark toggle feel sticky.
+	 */
+	--surface-glass: rgba(255, 255, 255, 0.88);
+	--topbar-glass: rgba(255, 255, 255, 0.55);
+	--accent-soft: var(--accent-soft-light);
+	--accent-tint: var(--accent-tint-light);
+	--border: rgba(16, 24, 40, 0.09);
+	--border-strong: rgba(16, 24, 40, 0.16);
+	--text: #101828;
+	--text-2: #59617a;
+	--text-3: #98a1b8;
+	--shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.05);
+	--shadow: 0 1px 2px rgba(16, 24, 40, 0.05), 0 14px 30px -18px rgba(16, 24, 40, 0.35);
+	--shadow-lg: 0 24px 60px -28px rgba(16, 24, 40, 0.45);
+	--ok: #12b76a;
+	--warn: #f79009;
+	--err: #f04438;
+	--ok-soft: #e7f8ef;
+	--warn-soft: #fef4e5;
+	--err-soft: #fdeceb;
+}
+
+/* Dark --------------------------------------------------------------------- */
+
+[data-theme="dark"] {
+	color-scheme: dark;
+
+	--bg: #0e1015;
+	--bg-glow-a: #3a2130;
+	--bg-glow-b: #1d2740;
+	--surface: #171a22;
+	--surface-2: #1e222c;
+	--surface-3: #262b38;
+	--surface-glass: rgba(23, 26, 34, 0.9);
+	--topbar-glass: rgba(20, 23, 30, 0.55);
+	--accent-soft: var(--accent-soft-dark);
+	--accent-tint: var(--accent-tint-dark);
+	--border: rgba(255, 255, 255, 0.09);
+	--border-strong: rgba(255, 255, 255, 0.18);
+	--text: #eef1f7;
+	--text-2: #a3abbe;
+	--text-3: #6f7789;
+	--shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+	--shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 18px 36px -22px rgba(0, 0, 0, 0.9);
+	--shadow-lg: 0 30px 70px -30px rgba(0, 0, 0, 0.95);
+	--ok: #32d583;
+	--warn: #fdb022;
+	--err: #f97066;
+	--ok-soft: rgba(50, 213, 131, 0.14);
+	--warn-soft: rgba(253, 176, 34, 0.14);
+	--err-soft: rgba(249, 112, 102, 0.14);
+}
+
+[data-theme="dark"] {
+	--accent-ink: #10131a;
+}
+
+/* --------------------------------------------------------------------------
+   Theme flips are instant, not animated.
+
+   Every colour in this app is a CSS variable, so changing `data-theme`
+   invalidates the whole document. With transitions live, the browser then
+   spends the next ~200ms re-rasterising the page (including every blurred
+   surface) frame by frame — that is the stutter. Dropping transitions for the
+   duration of the swap turns it into a single repaint.
+   -------------------------------------------------------------------------- */
+
+html.theme-switching,
+html.theme-switching *,
+html.theme-switching *::before,
+html.theme-switching *::after {
+	transition: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   App shell
+   -------------------------------------------------------------------------- */
+
+.app {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	isolation: isolate;
+}
+
+.app__backdrop {
+	position: fixed;
+	inset: 0;
+	z-index: -2;
+	background-color: var(--bg);
+	background-image:
+		radial-gradient(120% 80% at 8% -10%, var(--bg-glow-a) 0%, transparent 55%),
+		radial-gradient(110% 70% at 100% 0%, var(--bg-glow-b) 0%, transparent 50%);
+	background-size: cover;
+	background-position: center;
+}
+
+[data-theme="dark"] .app__backdrop {
+	opacity: 0.85;
+}
+
+.app__backdrop.has-image {
+	background-image: linear-gradient(rgba(8, 10, 14, 0.28), rgba(8, 10, 14, 0.28)), var(--bg-image);
+}
+
+/* Keeps text readable no matter what the user picks as a wallpaper. */
+.app__veil {
+	position: fixed;
+	inset: 0;
+	z-index: -1;
+	pointer-events: none;
+	background: linear-gradient(180deg, rgba(244, 245, 250, 0.45), rgba(244, 245, 250, 0.72));
+	opacity: 0;
+	transition: opacity 0.4s var(--ease);
+}
+
+[data-theme="dark"] .app__veil {
+	/* Light enough that a chosen wallpaper actually shows, dark enough that
+	   the (already 90% opaque) cards keep their contrast. */
+	background: linear-gradient(180deg, rgba(10, 12, 16, 0.32), rgba(10, 12, 16, 0.55));
+}
+
+.app__backdrop.has-image ~ .app__veil {
+	opacity: 1;
+}
+
+/* --------------------------------------------------------------------------
+   Top bar
+   -------------------------------------------------------------------------- */
+
+.topbar {
+	position: relative;
+	z-index: 5;
+	display: flex;
+	align-items: center;
+	gap: var(--gap-3);
+	flex: 0 0 auto;
+	min-height: var(--topbar-h);
+	padding: 10px var(--stage-pad);
+	border-bottom: 1px solid var(--border);
+	background: var(--topbar-glass);
+}
+
+.brand {
+	display: flex;
+	align-items: center;
+	gap: 11px;
+	min-width: 0;
+}
+
+.brand__mark {
+	display: grid;
+	place-items: center;
+	width: 38px;
+	height: 38px;
+	flex: 0 0 auto;
+	border-radius: 12px;
+	color: var(--accent-ink);
+	background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+	box-shadow: 0 8px 18px -10px var(--accent);
+}
+
+.brand__mark svg {
+	width: 21px;
+	height: 21px;
+	fill: none;
+	stroke: currentColor;
+}
+
+.brand__text {
+	display: flex;
+	flex-direction: column;
+	line-height: 1.15;
+	min-width: 0;
+}
+
+.brand__text strong {
+	font-size: 17px;
+	letter-spacing: 0.06em;
+}
+
+.brand__text small {
+	color: var(--text-3);
+	font-size: 11.5px;
+	letter-spacing: 0.02em;
+}
+
+.topbar__actions {
+	display: flex;
+	align-items: center;
+	flex: 0 0 auto;
+	gap: var(--gap-2);
+	margin-left: auto;
+}
+
+/* --------------------------------------------------------------------------
+   Stage / views
+   -------------------------------------------------------------------------- */
+
+.stage {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow: hidden auto;
+	padding: var(--stage-pad);
+	scrollbar-gutter: stable;
+}
+
+.view {
+	display: none;
+	max-width: 1440px;
+	margin: 0 auto;
+}
+
+.view.is-active {
+	display: block;
+	animation: view-in 0.34s var(--ease-out) both;
+}
+
+@keyframes view-in {
+	from {
+		opacity: 0;
+		transform: translateY(10px);
+	}
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+.grid {
+	display: grid;
+	gap: var(--gap-3);
+	align-items: start;
+}
+
+.grid--draw {
+	grid-template-columns: minmax(360px, 1fr) minmax(340px, 1fr);
+}
+
+.grid--settings {
+	grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+}
+
+.col {
+	display: flex;
+	flex-direction: column;
+	gap: var(--gap-3);
+	min-width: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Motion preferences
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.001ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.001ms !important;
+	}
+}

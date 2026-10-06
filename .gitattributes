@@ -1,0 +1,6 @@
+* text=auto
+
+# 题目给的 server/ 保持 LF，确保与上游仓库内容一致
+*.go text eol=lf
+server/go.mod text eol=lf
+server/go.sum text eol=lf

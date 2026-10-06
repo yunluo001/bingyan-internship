@@ -1,0 +1,528 @@
+/* ==========================================================================
+   views.css — layout of the two views: draw console + settings
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Draw view — stats
+   -------------------------------------------------------------------------- */
+
+.stat-row {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+	gap: var(--gap-2);
+	padding: 14px 16px;
+	border: 1px solid var(--border);
+	border-radius: var(--radius-lg);
+	background: var(--surface-2);
+}
+
+.stat {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 2px;
+	min-width: 0;
+}
+
+.stat__num {
+	font-size: clamp(20px, 3.4vw, 27px);
+	font-weight: 700;
+	line-height: 1.15;
+	font-variant-numeric: tabular-nums;
+	letter-spacing: -0.01em;
+}
+
+#stat-pool {
+	color: var(--accent-strong);
+}
+
+.stat__num.is-bump {
+	animation: bump 0.35s var(--ease-out) both;
+}
+
+@keyframes bump {
+	0% {
+		transform: scale(1);
+	}
+	40% {
+		transform: scale(1.16);
+	}
+	100% {
+		transform: scale(1);
+	}
+}
+
+.stat__label {
+	font-size: 11.5px;
+	color: var(--text-3);
+	text-align: center;
+}
+
+/* --------------------------------------------------------------------------
+   Draw view — room meta
+   -------------------------------------------------------------------------- */
+
+/* One row per monitored room: status on the left, counters in the middle,
+   disconnect on the right. The pill gets a fixed width so the rows line up. */
+.room-row {
+	gap: var(--gap-3);
+}
+
+.room-row .status {
+	margin-left: 0;
+	flex: 0 0 86px;
+	justify-content: center;
+}
+
+.room-row .row__meta {
+	font-variant-numeric: tabular-nums;
+}
+
+/* The row background is already surface-2, so the flat tiny button needs an
+   outline to read as a button rather than as stray text. */
+.room-row .btn--tiny {
+	border: 1px solid var(--border);
+	background: var(--surface);
+}
+
+/* --------------------------------------------------------------------------
+   Draw view — live danmaku log
+   -------------------------------------------------------------------------- */
+
+.card--log {
+	overflow: hidden;
+}
+
+.log {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	flex: 1 1 auto;
+	min-height: 220px;
+	max-height: min(42vh, 460px);
+	padding: 8px 12px 12px;
+	overflow: auto;
+	scrollbar-width: thin;
+	scroll-behavior: smooth;
+}
+
+.log[data-empty="true"] {
+	display: grid;
+	place-items: center;
+}
+
+.log__empty {
+	font-size: 12.5px;
+	color: var(--text-3);
+	text-align: center;
+	padding: 24px;
+}
+
+.log__item {
+	display: flex;
+	gap: 9px;
+	padding: 5px 8px;
+	border-radius: var(--radius-sm);
+	font-size: 13px;
+	line-height: 1.5;
+	animation: log-in 0.28s var(--ease-out) both;
+}
+
+@keyframes log-in {
+	from {
+		opacity: 0;
+		transform: translateY(-6px);
+	}
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+.log__item.is-hit {
+	background: var(--accent-tint);
+}
+
+.log__user {
+	flex: 0 0 auto;
+	max-width: 34%;
+	font-weight: 600;
+	color: var(--text-2);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* Which room a line came from. Hidden while only one room is monitored. */
+.log__room {
+	flex: 0 0 auto;
+	align-self: center;
+	padding: 0 6px;
+	border-radius: 999px;
+	font-size: 11px;
+	font-variant-numeric: tabular-nums;
+	color: var(--text-3);
+	background: var(--surface-3);
+}
+
+.log[data-rooms="1"] .log__room,
+.log[data-rooms="0"] .log__room {
+	display: none;
+}
+
+.log__text {
+	min-width: 0;
+	word-break: break-word;
+	color: var(--text);
+}
+
+.log__item.is-hit .log__text {
+	font-weight: 600;
+}
+
+.log__badge {
+	flex: 0 0 auto;
+	align-self: center;
+	font-size: 11px;
+	font-weight: 700;
+	color: var(--accent-ink);
+	background: var(--accent);
+	padding: 1px 7px;
+	border-radius: 999px;
+}
+
+/* --------------------------------------------------------------------------
+   Draw view — winners
+   -------------------------------------------------------------------------- */
+
+.card--winners {
+	overflow: hidden;
+}
+
+.winners {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 8px;
+	padding: 12px 16px;
+	max-height: min(40vh, 420px);
+	overflow: auto;
+	scrollbar-width: thin;
+}
+
+.winner {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px 10px;
+	padding: 9px 12px;
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	background: var(--surface-2);
+	min-width: 0;
+	animation: winner-in 0.44s var(--ease-out) both;
+}
+
+.winner.is-top {
+	border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+	background: linear-gradient(135deg, var(--accent-tint), var(--surface-2));
+}
+
+/** Section header when winners are grouped per room. */
+.winner__group {
+	grid-column: 1 / -1;
+	padding: 10px 4px 2px;
+	font-size: 12.5px;
+	font-weight: 650;
+	color: var(--text-2);
+	letter-spacing: 0.01em;
+}
+
+.winner__group:first-child {
+	padding-top: 2px;
+}
+
+@keyframes winner-in {
+	from {
+		opacity: 0;
+		transform: translateY(10px) scale(0.96);
+	}
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+.winner__rank {
+	display: grid;
+	place-items: center;
+	width: 24px;
+	height: 24px;
+	flex: 0 0 auto;
+	border-radius: 8px;
+	font-size: 11.5px;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	color: var(--text-2);
+	background: var(--surface-3);
+}
+
+.winner.is-top .winner__rank {
+	color: var(--accent-ink);
+	background: var(--accent);
+}
+
+.winner__name {
+	flex: 1 1 220px;
+	min-width: 8em;
+	font-size: 13.5px;
+	font-weight: 600;
+	line-height: 1.35;
+	white-space: normal;
+	overflow-wrap: anywhere;
+}
+
+.winner__uid {
+	flex: 0 0 auto;
+	font-size: 11px;
+	color: var(--text-3);
+	font-variant-numeric: tabular-nums;
+}
+
+.winner .tag {
+	flex: 0 0 auto;
+}
+
+.winners__meta {
+	padding: 12px 18px 16px;
+	border-top: 1px solid var(--border);
+	font-size: 12px;
+	color: var(--text-3);
+}
+
+/* Roll animation shown inside the result modal while a draw is in flight. */
+.roll {
+	display: grid;
+	place-items: center;
+	gap: 14px;
+	padding: 34px 20px 40px;
+}
+
+.roll__spinner {
+	width: 46px;
+	height: 46px;
+	border-radius: 50%;
+	border: 3px solid var(--surface-3);
+	border-top-color: var(--accent);
+	animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.roll__text {
+	font-size: 14px;
+	color: var(--text-2);
+}
+
+.confetti {
+	position: fixed;
+	inset: 0;
+	z-index: 90;
+	pointer-events: none;
+	overflow: hidden;
+}
+
+.confetti i {
+	position: absolute;
+	top: -12px;
+	width: 8px;
+	height: 14px;
+	border-radius: 2px;
+	opacity: 0.9;
+	animation: confetti-fall linear forwards;
+}
+
+@keyframes confetti-fall {
+	to {
+		transform: translate3d(var(--dx, 0), 108vh, 0) rotate(var(--rot, 540deg));
+		opacity: 0;
+	}
+}
+
+/* --------------------------------------------------------------------------
+   Settings — account
+   -------------------------------------------------------------------------- */
+
+.account-idle,
+.account-user {
+	display: flex;
+	flex-direction: column;
+	gap: var(--gap-3);
+}
+
+.account-pane {
+	display: flex;
+	flex-direction: column;
+	gap: var(--gap-2);
+	animation: view-in 0.28s var(--ease-out) both;
+}
+
+.account-user {
+	flex-direction: row;
+	align-items: center;
+	gap: var(--gap-3);
+	padding: 12px 14px;
+	border: 1px solid var(--border);
+	border-radius: var(--radius-lg);
+	background: var(--surface-2);
+	animation: card-in 0.34s var(--ease-out) both;
+}
+
+.account-user__avatar {
+	width: 54px;
+	height: 54px;
+	flex: 0 0 auto;
+	border-radius: 50%;
+	object-fit: cover;
+	background: var(--surface-3);
+}
+
+.account-user__text {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	flex: 1 1 auto;
+}
+
+.account-user__text strong {
+	font-size: 14.5px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.account-user__text small {
+	font-size: 12px;
+	color: var(--text-3);
+	font-variant-numeric: tabular-nums;
+}
+
+.account-chip {
+	display: inline-flex;
+	align-items: center;
+	justify-content: flex-start;
+	flex: 0 0 auto;
+	width: 156px;
+	gap: 8px;
+	max-width: 210px;
+	min-height: 38px;
+	padding: 0 14px 0 6px;
+	border: 1px solid var(--border);
+	border-radius: 999px;
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--text-2);
+	background: var(--surface-2);
+	transition:
+		border-color 0.18s var(--ease),
+		color 0.18s var(--ease),
+		transform 0.16s var(--ease);
+}
+
+.account-chip:hover {
+	color: var(--text);
+	border-color: var(--border-strong);
+	transform: translateY(-1px);
+}
+
+.account-chip__avatar {
+	width: 26px;
+	height: 26px;
+	border-radius: 50%;
+	object-fit: cover;
+}
+
+.account-chip__text {
+	flex: 1 1 auto;
+	min-width: 0;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* --------------------------------------------------------------------------
+   Responsive
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 1080px) {
+	.grid--draw {
+		grid-template-columns: 1fr;
+	}
+
+	.log {
+		max-height: 320px;
+	}
+}
+
+@media (max-width: 720px) {
+	.brand__text small,
+	.account-chip__text {
+		display: none;
+	}
+
+	.account-chip {
+		width: auto;
+		padding: 0 10px;
+	}
+
+	.tabs--nav {
+		margin-left: 0;
+	}
+
+	.tabs--nav .tab {
+		padding: 8px 14px;
+	}
+
+	.field--num {
+		flex: 0 0 100px;
+		max-width: 100px;
+	}
+
+	.btn--start {
+		flex: 1 1 100%;
+	}
+
+	.topbar {
+		gap: var(--gap-2);
+	}
+}
+
+@media (max-width: 520px) {
+	.theme-switch {
+		display: none;
+	}
+
+	.card__head,
+	.card__body {
+		padding-inline: 15px;
+	}
+
+	.winners {
+		grid-template-columns: 1fr;
+	}
+}
+
+/* Very short viewports (the reviewers resize windows) ---------------------- */
+
+@media (max-height: 560px) {
+	.log {
+		max-height: 210px;
+	}
+
+	.card--winners .winners {
+		max-height: 200px;
+	}
+}
