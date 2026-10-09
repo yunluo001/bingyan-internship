@@ -207,6 +207,8 @@ GACHAGO/
 - `web/js/store.js` 是唯一状态源：配置、历史、主题、语言、Cookie 都存在一个 state 对象里。
 - 修改统一走 `patch()` / `updateActiveSet()` 等方法，改完保存并通知订阅者。
 - `localStorage` 读取有 `try/catch`；数据结构带 `v1` 版本后缀，读取时和默认值合并，旧数据不会让页面白屏。
+- 登录 Cookie 封装成带 `savedAt` / `checkedAt` / `expiresAt` 的会话；启动和长时间空闲后
+  会重新调用 `myinfo` 校验，接口返回 `-101` 时自动清理并提示重新登录。
 - 不需要跨刷新保存的连接状态、参与池、弹幕日志不写入存储。
 
 ### 5. 多房间 Merge Pooling
@@ -253,7 +255,10 @@ GACHAGO/
 ## 已知问题 / 还没做的
 
 1. `b23.tv` 短链只给了明确提示，没有做短链展开。
-2. Cookie 存在 `localStorage`，这是本地练习工具的方便做法；真实产品应该使用 httpOnly Cookie。
+2. Cookie 仍然存在 `localStorage`（本地练习环境的方便做法），但已经封装成带
+   `savedAt` / `checkedAt` / `expiresAt` 的会话对象：启动和长时间空闲后会调用
+   `/api/x/space/myinfo` 校验，接口返回 `-101` 时自动清理并提示重新登录。
+   真实产品仍建议使用 httpOnly Cookie + 后端会话。
 3. 中继服务沿用题目原版的白名单：只允许 `*.chat.bilibili.com` / `*.chat.bilibili.co`；
    中继不可用时客户端会尝试直连 `wss://…/sub`，并显示“直连中”。
 4. 仓库内没有自动化端到端测试；目前依靠浏览器控制台、Network 面板和手工验收。

@@ -20,6 +20,7 @@ const DEFAULT_TIMEOUT = 15000;
  * project looks broken is simply that nobody started the server.
  */
 export const OFFLINE_EVENT = "gachago:offline";
+export const SESSION_EXPIRED_EVENT = "gachago:session-expired";
 
 function reportOffline(detail) {
 	window.dispatchEvent(new CustomEvent(OFFLINE_EVENT, { detail }));
@@ -106,6 +107,9 @@ export async function request(path, options = {}) {
 	}
 
 	if (!response.ok) {
+		if (response.status === 401) {
+			window.dispatchEvent(new CustomEvent(SESSION_EXPIRED_EVENT, { detail: { path: url } }));
+		}
 		throw new ApiError(payload?.message || `HTTP ${response.status}`, {
 			status: response.status,
 			path: url,
@@ -114,6 +118,9 @@ export async function request(path, options = {}) {
 	}
 
 	if (payload && typeof payload.code === "number" && payload.code !== 0) {
+		if (payload.code === -101) {
+			window.dispatchEvent(new CustomEvent(SESSION_EXPIRED_EVENT, { detail: { path: url } }));
+		}
 		throw new ApiError(payload.message || `code ${payload.code}`, {
 			status: response.status,
 			code: payload.code,

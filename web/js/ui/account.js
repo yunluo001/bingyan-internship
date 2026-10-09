@@ -6,10 +6,16 @@
 
 import { $, el, setAvatarImage } from "../util.js";
 import { t } from "../i18n.js";
-import { fetchMyInfo, normalizeCookieInput, qrGenerate, qrPoll } from "../api.js";
+import {
+	SESSION_EXPIRED_EVENT,
+	fetchMyInfo,
+	normalizeCookieInput,
+	qrGenerate,
+	qrPoll,
+} from "../api.js";
 import { looksLikeImageSource, qrDataUrl } from "../qrcode.js";
 import { store } from "../store.js";
-import { toastApiError, toastError, toastOk } from "./toast.js";
+import { toastApiError, toastError, toastOk, toastWarn } from "./toast.js";
 
 const POLL_INTERVAL = 2000;
 
@@ -177,16 +183,14 @@ export function createAccountController({ onUser }) {
 		}
 		try {
 			const user = await fetchMyInfo(cookie);
-			store.patch({ cookie, user }, "account");
+			store.saveSession(cookie, user);
 			stopPolling();
 			render();
 			onUser?.(user);
 			toastOk(`${t("account.loggedIn")}: ${user.name}`);
 			return true;
 		} catch (error) {
-			store.patch({ cookie: "", user: null }, "account");
-			render();
-			toastApiError(error, "err.badCookie");
+			if (error?.code !== -101) toastApiError(error, "err.badCookie");
 			return false;
 		}
 	}
@@ -194,11 +198,39 @@ export function createAccountController({ onUser }) {
 	function logout() {
 		stopPolling();
 		currentKey = "";
-		store.patch({ cookie: "", user: null }, "account");
+		store.clearSession();
 		showQrPlaceholder();
 		setQrStatus("account.qrIdle");
 		render();
 		onUser?.(null);
+	}
+
+	/**
+	 * Validate the stored cookie on boot and after a long idle period.
+	 * A -101 from any request clears the session through SESSION_EXPIRED_EVENT.
+	 */
+	async function validateSession() {
+		const { cookie, user } = store.state;
+		if (!cookie) {
+			render();
+			return false;
+		}
+		if (user && !store.needsSessionCheck()) {
+			render();
+			return true;
+		}
+		try {
+			const fresh = await fetchMyInfo(cookie);
+			store.saveSession(cookie, fresh);
+			render();
+			onUser?.(fresh);
+			return true;
+		} catch (error) {
+			// -101 is handled by the session-expired listener; offline or
+			// transient errors keep the current session untouched.
+			console.warn("[account] session check failed", error);
+			return false;
+		}
 	}
 
 	function render() {
@@ -232,6 +264,14 @@ export function createAccountController({ onUser }) {
 		$("#btn-cookie-login")?.addEventListener("click", () => adoptCookie(nodes.cookieInput.value));
 		$("#btn-logout")?.addEventListener("click", logout);
 
+		window.addEventListener(SESSION_EXPIRED_EVENT, () => {
+			if (!store.state.cookie) return;
+			store.clearSession();
+			render();
+			onUser?.(null);
+			toastWarn(t("account.expired"));
+		});
+
 		for (const tab of document.querySelectorAll("[data-account-tab]")) {
 			tab.addEventListener("click", () => {
 				const name = tab.dataset.accountTab;
@@ -252,5 +292,12 @@ export function createAccountController({ onUser }) {
 		});
 	}
 
-	return { wire, render, adoptCookie, logout, isLoggedIn: () => Boolean(store.state.user) };
+	return {
+		wire,
+		render,
+		validateSession,
+		adoptCookie,
+		logout,
+		isLoggedIn: () => Boolean(store.state.user),
+	};
 }

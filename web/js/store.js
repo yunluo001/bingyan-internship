@@ -5,7 +5,7 @@
  * -----------
  * {
  *   lang, themeMode, accent,
- *   cookie, user,                       // bilibili session
+ *   cookie, user, session,              // bilibili session (cookie + metadata)
  *   sets: [{ id, name, keywords, winners, room: { id, title } }],
  *   activeSetId,
  *   history: [{ id, at, keywords, count, size, roomId, winners: [{ uid, name }] }],
@@ -19,6 +19,7 @@ import { uid } from "./util.js";
 
 const KEY = "gachago.state.v1";
 const WALLPAPER_KEY = "gachago.wallpaper.v1";
+const SESSION_TTL = 6 * 60 * 60 * 1000;
 
 export const ACCENTS = ["pink", "violet", "ocean", "mint"];
 export const THEME_MODES = ["system", "light", "dark"];
@@ -53,6 +54,7 @@ function createDefaultState() {
 		accent: "pink",
 		cookie: "",
 		user: null,
+		session: { savedAt: 0, checkedAt: 0, expiresAt: 0 },
 		sets: [first],
 		activeSetId: first.id,
 		history: [],
@@ -77,6 +79,11 @@ function normalize(raw) {
 		ACCENTS.includes(raw.accent) || /^#[0-9a-f]{6}$/i.test(raw.accent) ? raw.accent : "pink";
 	state.cookie = typeof raw.cookie === "string" ? raw.cookie : "";
 	state.user = raw.user && typeof raw.user === "object" ? raw.user : null;
+	state.session = {
+		savedAt: Number.isFinite(raw.session?.savedAt) ? raw.session.savedAt : 0,
+		checkedAt: Number.isFinite(raw.session?.checkedAt) ? raw.session.checkedAt : 0,
+		expiresAt: Number.isFinite(raw.session?.expiresAt) ? raw.session.expiresAt : 0,
+	};
 
 	state.sets = state.sets.map((set) => ({
 		id: set?.id || uid("set"),
@@ -144,6 +151,52 @@ class Store {
 			}
 			return false;
 		}
+	}
+
+	/* ------------------------------------------------------------------ */
+	/* Bilibili session                                                   */
+	/* ------------------------------------------------------------------ */
+
+	/** Persist a verified cookie together with its session metadata. */
+	saveSession(cookie, user) {
+		const now = Date.now();
+		this.state.cookie = cookie;
+		this.state.user = user;
+		this.state.session = {
+			savedAt: now,
+			checkedAt: now,
+			expiresAt: now + SESSION_TTL,
+		};
+		this.save();
+		this.emit("account");
+		return this.state;
+	}
+
+	/** Call after a successful `myinfo` check to extend the soft TTL. */
+	markSessionChecked() {
+		const now = Date.now();
+		this.state.session.checkedAt = now;
+		this.state.session.expiresAt = now + SESSION_TTL;
+		this.save();
+		this.emit("account");
+		return this.state;
+	}
+
+	clearSession() {
+		this.state.cookie = "";
+		this.state.user = null;
+		this.state.session = { savedAt: 0, checkedAt: 0, expiresAt: 0 };
+		this.save();
+		this.emit("account");
+		return this.state;
+	}
+
+	/** Old saves or a stale 6h window should be checked once on boot. */
+	needsSessionCheck() {
+		const { cookie, session } = this.state;
+		if (!cookie) return false;
+		if (!session?.checkedAt) return true;
+		return Date.now() - session.checkedAt > SESSION_TTL;
 	}
 
 	/* ------------------------------------------------------------------ */

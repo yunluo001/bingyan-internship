@@ -1,0 +1,690 @@
+% =====================================================================
+%  GACHAGO 实习报告
+%  编译：xelatex internship-report.tex
+% =====================================================================
+\documentclass[11pt,a4paper]{ctexart}
+
+\usepackage[margin=2.4cm,top=2.6cm,bottom=2.6cm]{geometry}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage[most]{tcolorbox}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning}
+\usepackage[hidelinks]{hyperref}
+
+\definecolor{accent}{HTML}{FB7299}
+\definecolor{accentdark}{HTML}{E8467A}
+\definecolor{ink}{HTML}{101828}
+\definecolor{ink2}{HTML}{59617A}
+\definecolor{codebg}{HTML}{F7F8FC}
+\definecolor{deepblue}{HTML}{2F6FEB}
+\definecolor{okgreen}{HTML}{12B981}
+
+\lstdefinelanguage{JSX}{
+  keywords={const,let,var,function,return,if,else,for,while,new,try,catch,throw,
+            async,await,class,extends,export,import,from,of,in,null,true,false,
+            undefined,this,typeof,instanceof,delete},
+  keywordstyle=\color{deepblue}\bfseries,
+  sensitive=true,
+  comment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  morestring=[b]",
+  morestring=[b]',
+}
+\lstdefinelanguage{css}{
+  keywords={padding,border-radius,background,color,display,flex,grid,margin,width,
+            height,gap,font,transition,transform,box-sizing,position,overflow},
+  keywordstyle=\color{deepblue}\bfseries,
+  sensitive=false,
+  comment=[s]{/*}{*/},
+  morestring=[b]",
+  morestring=[b]',
+}
+\lstset{
+  language=JSX,
+  basicstyle=\ttfamily\footnotesize,
+  commentstyle=\color{okgreen!60!black},
+  stringstyle=\color{accentdark},
+  numbers=left,
+  numberstyle=\tiny\color{ink2},
+  numbersep=8pt,
+  backgroundcolor=\color{codebg},
+  frame=single,
+  rulecolor=\color{ink!15},
+  framesep=6pt,
+  breaklines=true,
+  showstringspaces=false,
+  tabsize=2,
+  columns=fullflexible,
+  keepspaces=true,
+  xleftmargin=14pt,
+  framexleftmargin=14pt,
+}
+
+\newtcolorbox{notebox}[1][说明]{
+  enhanced, breakable,
+  colback=deepblue!5, colframe=deepblue!70,
+  boxrule=0pt, leftrule=2.5pt, arc=3pt,
+  fonttitle=\bfseries\small, title=#1,
+  left=8pt, right=8pt, top=5pt, bottom=5pt,
+  attach boxed title to top left={xshift=6pt, yshift=-2.5pt},
+  boxed title style={colback=deepblue!70, arc=2pt, boxrule=0pt},
+  coltitle=white,
+}
+\newtcolorbox{keybox}[1][关键原理]{
+  enhanced, breakable,
+  colback=accent!6, colframe=accent!75,
+  boxrule=0pt, leftrule=2.5pt, arc=3pt,
+  fonttitle=\bfseries\small, title=#1,
+  left=8pt, right=8pt, top=5pt, bottom=5pt,
+  attach boxed title to top left={xshift=6pt, yshift=-2.5pt},
+  boxed title style={colback=accent!85, arc=2pt, boxrule=0pt},
+  coltitle=white,
+}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5em}
+\linespread{1.12}
+\setlist[itemize]{leftmargin=1.6em,itemsep=2pt,topsep=3pt}
+\setlist[enumerate]{leftmargin=1.9em,itemsep=2pt,topsep=3pt}
+
+\newcommand{\code}[1]{\texttt{\small\detokenize{#1}}}
+\newcommand{\key}[1]{\textbf{\color{accentdark}#1}}
+\newcommand{\tabhead}[1]{\textbf{#1}}
+
+\tikzset{
+  flowbox/.style={draw=ink!25, fill=codebg, rounded corners=3pt, inner sep=5pt,
+                  align=center, font=\small, minimum height=0.85cm},
+  flowaccent/.style={flowbox, draw=accent!60, fill=accent!8},
+  flowblue/.style={flowbox, draw=deepblue!45, fill=deepblue!7},
+  flowgreen/.style={flowbox, draw=okgreen!60, fill=okgreen!7},
+  arrow/.style={-{Stealth[length=2.2mm]}, thick, color=ink2},
+}
+
+\begin{document}
+
+% ---------------------------------------------------------------------
+% 封面
+% ---------------------------------------------------------------------
+\begin{titlepage}
+\centering
+\vspace*{2.6cm}
+{\color{accent}\rule{3.2cm}{3pt}}\\[0.6cm]
+{\Huge\bfseries GACHAGO 直播弹幕抽奖\par}
+\vspace{0.35cm}
+{\Large 实习报告\par}
+\vspace{0.5cm}
+{\color{accent}\rule{3.2cm}{3pt}}\\[1.4cm]
+
+\begin{tcolorbox}[width=0.84\textwidth,colback=codebg,colframe=ink!12,
+  arc=4pt,boxrule=0.6pt,left=14pt,right=14pt,top=12pt,bottom=12pt]
+\centering
+{\bfseries 实习内容}\\[4pt]
+使用 HTML / CSS / 原生 JavaScript（ES Modules）\\
+完成 B 站直播间弹幕抽奖网页\\[8pt]
+{\bfseries 核心链路}\\[4pt]
+登录 \(\rightarrow\) 加房间 \(\rightarrow\) 听弹幕 \(\rightarrow\) 关键词入池 \(\rightarrow\) 抽奖出名单
+\end{tcolorbox}
+
+\vfill
+{\small\color{ink2} 2026 年 10 月\par}
+\vspace{0.8cm}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% =====================================================================
+\section{实习概述}
+% =====================================================================
+
+本次实习的任务是完成一个 B 站直播弹幕抽奖网页。用户登录后可以添加直播间，
+页面持续接收该直播间的弹幕，按照关键词把观众加入参与池，最后随机抽出若干名中奖者。
+完整链路为：
+
+\begin{center}
+\begin{tikzpicture}[node distance=5mm and 5mm]
+\node[flowaccent] (login) {登录};
+\node[flowbox, right=of login] (room) {加房间};
+\node[flowbox, right=of room] (listen) {听弹幕};
+\node[flowbox, right=of listen] (pool) {关键词入池};
+\node[flowgreen, right=of pool] (draw) {抽奖出名单};
+\draw[arrow] (login) -- (room);
+\draw[arrow] (room) -- (listen);
+\draw[arrow] (listen) -- (pool);
+\draw[arrow] (pool) -- (draw);
+\end{tikzpicture}
+\end{center}
+
+题目要求只使用前端三件套，不使用框架，也不使用构建工具。因此整个项目由三部分组成：
+
+\begin{itemize}
+  \item \textbf{前端页面}：界面、交互、请求、弹幕解析、参与池、抽奖和本地存储；
+  \item \textbf{题目提供的本地转发服务}：负责静态托管、B 站接口反向代理和弹幕 WebSocket 中转；
+  \item \textbf{B 站服务}：提供账号、直播间、弹幕配置等接口，以及持续推送弹幕的 WebSocket 服务。
+\end{itemize}
+
+项目最终完成了 P0、P1、P2 的主要功能，包括 Cookie 登录、扫码登录、房间号解析、
+弹幕解帧解压、关键词抽奖、多套配置、历史记录、主题切换、断线重连和多房间合并。
+
+% =====================================================================
+\section{整体框架搭建}
+% =====================================================================
+
+\subsection{总体架构}
+
+页面不能直接访问 B 站接口：浏览器有同源策略，并且禁止脚本设置 \code{Cookie} 请求头。
+所以页面只跟本机的转发服务通信，由转发服务把请求发送给 B 站。
+
+\begin{center}
+\begin{tikzpicture}[node distance=10mm and 12mm]
+\node[flowaccent, text width=3.2cm] (page) {前端页面\\\code{127.0.0.1:8787}};
+\node[flowblue, right=of page, text width=3.5cm] (relay) {本地转发服务\\\code{server/}};
+\node[flowgreen, right=of relay, text width=3.2cm] (bili) {B 站\\API + WebSocket};
+\draw[arrow] (page) -- node[above, font=\scriptsize, color=ink2] {同源请求} (relay);
+\draw[arrow] (relay) -- node[above, font=\scriptsize, color=ink2] {HTTPS / WSS} (bili);
+\end{tikzpicture}
+\end{center}
+
+页面使用相对路径访问：
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}l l X@{}}
+\toprule
+\tabhead{本机路径} & \tabhead{转发到} & \tabhead{用途} \\
+\midrule
+\code{/api/...} & \code{api.bilibili.com} & 账号、WBI 密钥 \\
+\code{/live/...} & \code{api.live.bilibili.com} & 房间信息、弹幕配置 \\
+\code{/passport/...} & \code{passport.bilibili.com} & 扫码登录 \\
+\code{/ws} & 弹幕 WebSocket & 二进制字节原样中转 \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{前端模块划分}
+
+前端没有使用框架，但按职责拆成了多个 ES Module。这样做的目的是让协议、请求、状态和
+界面互不引用，出问题时能快速定位。
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}l X@{}}
+\toprule
+\tabhead{模块} & \tabhead{职责} \\
+\midrule
+\code{main.js} & 入口：启动、视图切换、主题、语言 \\
+\code{api.js} & 请求封装、B 站接口、房间号解析 \\
+\code{wbi.js} / \code{md5.js} & WBI 签名与 MD5 \\
+\code{danmaku.js} & 弹幕协议：组包、解帧、解压、解析、心跳、重连 \\
+\code{pool.js} & 参与池、关键词过滤、抽奖算法 \\
+\code{rooms.js} & 多房间连接管理 \\
+\code{store.js} & 单一状态源与 \code{localStorage} 持久化 \\
+\code{ui/} & 各视图控制器、模态框、toast、账号面板 \\
+\code{i18n.js} / \code{qrcode.js} / \code{exporter.js} & 中英双语、二维码、Markdown 导出 \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{运行方式}
+
+项目使用题目提供的 Go 转发服务：
+
+\begin{lstlisting}[language=bash]
+cd server
+go run . -addr 127.0.0.1:8787 -web ../web
+\end{lstlisting}
+
+然后打开 \code{http://127.0.0.1:8787}。不能直接双击 \code{index.html}，
+因为 \code{file://} 下 ES Module 会被浏览器拦截，而且没有服务可以转发 \code{/api}、\code{/live}、
+\code{/passport} 和 \code{/ws}。
+
+\begin{keybox}[框架搭建的关键点]
+\begin{enumerate}
+  \item 页面只获取同源数据，跨域和 Cookie 问题交给本地服务处理；
+  \item 协议、请求、状态、渲染分层，避免把网络逻辑和界面逻辑混在一起；
+  \item 所有状态集中到 \code{store.js}，界面只读状态、只通过 store 方法修改状态。
+\end{enumerate}
+\end{keybox}
+
+\subsection{HTML 与 CSS 的基本构成}
+
+整个页面由 HTML 描述结构，由 CSS 描述样式，再由 JavaScript 负责交互和数据。
+这三部分职责分开，页面才不会写成一团。
+
+\subsubsection{HTML 的基本构成}
+
+一个 HTML 文档的基本骨架是：
+
+\begin{lstlisting}[language=html]
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GACHAGO</title>
+    <link rel="stylesheet" href="./css/base.css" />
+  </head>
+  <body>
+    <header class="topbar">...</header>
+    <main>
+      <section id="view-draw">...</section>
+      <section id="view-settings" hidden>...</section>
+    </main>
+    <script type="module" src="./js/main.js"></script>
+  </body>
+</html>
+\end{lstlisting}
+
+主要概念包括：
+
+\begin{itemize}
+  \item \textbf{标签和元素}：\code{<h2>}、\code{<p>}、\code{<button>} 等描述内容；
+  \item \textbf{属性}：\code{class}、\code{id}、\code{type}、\code{value} 等补充信息；
+  \item \textbf{语义化标签}：\code{<header>}、\code{<main>}、\code{<section>}、\code{<article>}
+        让结构更清楚；
+  \item \textbf{表单}：\code{<label>} + \code{<input>}、\code{<select>}、\code{<button>}；
+  \item \textbf{自定义数据}：\code{data-*}，例如 \code{data-room-id}；
+  \item \textbf{可访问性}：\code{alt}、\code{aria-label}、\code{role}、\code{aria-selected}。
+\end{itemize}
+
+\subsubsection{CSS 的基本构成}
+
+CSS 规则由“选择器 + 声明块”组成：
+
+\begin{lstlisting}[language=css]
+.card {
+  padding: 16px;
+  border-radius: 12px;
+  background: #ffffff;
+}
+\end{lstlisting}
+
+主要概念包括：
+
+\begin{itemize}
+  \item \textbf{选择器}：元素、类、ID、属性、后代、伪类；
+  \item \textbf{盒模型}：content、padding、border、margin，项目统一用
+        \code{box-sizing: border-box}；
+  \item \textbf{布局}：\code{display: block / inline / flex / grid}；
+  \item \textbf{层叠和优先级}：越具体的选择器越优先，后写的覆盖先写的；
+  \item \textbf{CSS 变量}：例如 \code{--accent}、\code{--surface}、\code{--text}；
+  \item \textbf{响应式}：用 \code{@media (max-width: ...)} 在窄屏改变列数和间距。
+\end{itemize}
+
+项目里 CSS 分成三个文件：\code{base.css} 放 reset、变量和主题，
+\code{components.css} 放按钮、卡片、输入框等组件，
+\code{views.css} 放抽奖页和设置页的具体布局。这样修改样式时不会互相影响。
+
+% =====================================================================
+\section{题目提供的 GitHub 内容}
+% =====================================================================
+
+题目给出的仓库是：
+
+\begin{center}
+\code{https://github.com/aDarkMaker/BiliLuckyDraw/tree/BingyanFE-Practice}
+\end{center}
+
+仓库里和我直接相关的部分主要有三类。
+
+\subsection{\code{server/}：本地转发服务}
+
+这是一个只负责转发的 Go 服务，不包含抽奖业务逻辑。它做三件事：
+
+\begin{enumerate}
+  \item \textbf{静态托管}：把 \code{web/} 目录作为静态文件目录，浏览器从
+        \code{127.0.0.1:8787} 打开页面；
+  \item \textbf{反向代理}：把 \code{/api}、\code{/live}、\code{/passport} 开头的请求
+        分别转发到 B 站的三个域名；
+  \item \textbf{WebSocket 中转}：把 \code{/ws} 的二进制字节原样转发给 B 站弹幕节点，
+        服务本身不解析弹幕。
+\end{enumerate}
+
+转发服务解决了两个浏览器限制：
+
+\begin{itemize}
+  \item \textbf{同源策略}：页面和转发服务同源，所以浏览器不会拦截；
+  \item \textbf{Cookie 头限制}：浏览器禁止脚本设置 \code{Cookie} 头，所以页面用
+        \code{X-Cookie} 传递登录态，服务端再把它转换成真正的 \code{Cookie} 头。
+\end{itemize}
+
+\subsection{\code{docs/}：接口和交付说明}
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}l X@{}}
+\toprule
+\tabhead{文件} & \tabhead{内容} \\
+\midrule
+\code{docs/api.md} & 本地路由、Cookie 约定、B 站接口、弹幕包头 \\
+\code{docs/features.md} & P0 / P1 / P2 功能清单 \\
+\code{docs/delivery.md} & 交付要求：能跑的仓库、README、演示、已知问题 \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{\code{web/}：前端空壳}
+
+题目给的前端只有最基础的页面骨架。我的实现是在这个空壳上继续写页面、
+样式、请求封装、弹幕协议、参与池、抽奖、状态管理和界面控制器。
+
+\begin{notebox}[题目仓库和我实现的关系]
+\code{server/} 保持题目原样，负责转发；\code{web/} 是我实际完成的部分。
+两者通过 \code{/api}、\code{/live}、\code{/passport}、\code{/ws} 这几个约定路径连接。
+\end{notebox}
+
+\subsection{从讲义中理解到的原理}
+
+结合题目文档和讲义，我重点理解了下面几条：
+
+\begin{itemize}
+  \item 浏览器同源策略和 CORS 限制的是“跨域读取”，不是请求能不能发出去；
+  \item B 站接口统一返回 \code{\{code, message, data\}}，只有 \code{code === 0} 才算业务成功；
+  \item 弹幕 WebSocket 传的是二进制包，不是普通 JSON；
+  \item 参与池必须按 \code{uid} 去重，昵称不是唯一标识；
+  \item 抽奖必须使用公平洗牌，不能用 \code{sort(() => Math.random() - 0.5)}。
+\end{itemize}
+
+% =====================================================================
+\section{实现内容与关键原理}
+% =====================================================================
+
+\subsection{请求封装与登录}
+
+所有网络请求都走 \code{api.js} 的 \code{request()}。它负责拼接 query、带上
+\code{X-Cookie}、设置超时、解析 JSON，并把 HTTP 错误和业务 \code{code !== 0}
+统一抛成异常。
+
+\begin{lstlisting}
+const res = await fetch(url, {
+  headers: {
+    Accept: 'application/json, text/plain, */*',
+    ...(cookie ? { 'X-Cookie': cookie } : {}),
+  },
+  signal: controller.signal,
+});
+const json = await res.json();
+if (json.code !== 0) throw new Error(json.message);
+\end{lstlisting}
+
+登录支持两种方式：
+
+\begin{itemize}
+  \item \textbf{Cookie 登录}：兼容整段 \code{document.cookie}、\code{Cookie:} 头和单独的
+        \code{SESSDATA} 值；
+  \item \textbf{扫码登录}：申请二维码后每 2 秒轮询，处理 \code{0}（成功）、
+        \code{86090}（已扫待确认）、\code{86038}（过期）三种状态。
+\end{itemize}
+
+\begin{keybox}[\code{getDanmuInfo} 的 WBI 签名]
+这个接口不带 \code{w\_rid} 和 \code{wts} 会返回 \code{-352} 风控失败。
+签名步骤是：
+\begin{enumerate}
+  \item 从 \code{/api/x/web-interface/nav} 取 \code{img\_url} 和 \code{sub\_url}，
+        提取文件名作为 \code{img\_key} 和 \code{sub\_key}；
+  \item 把两个 key 拼接后按固定的 64 项置换表重排，取前 32 位作为 \code{mixin\_key}；
+  \item 参数按键名排序、值去掉 \code{!'()*}、URL 编码，接上 \code{wts}；
+  \item 计算 \code{w\_rid = md5(query + mixin\_key)}。
+\end{enumerate}
+签名串必须原样发送，不能再让 URL 编码器重新编码，否则签名会对不上。
+\end{keybox}
+
+\subsection{房间与弹幕接入}
+
+房间号解析支持纯数字、直播间链接、\code{/blanc/} 路径和 query 参数。
+短号不是真实房间号，必须用 \code{get\_info} 返回的 \code{data.room\_id}，
+必要时再调用 \code{mobileRoomInit}。
+
+拿到真实房间号后，调用 \code{getDanmuInfo} 获得 \code{token} 和 \code{host\_list}，
+然后连接 WebSocket。弹幕协议是所有功能里最关键的部分。
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}l l X@{}}
+\toprule
+\tabhead{偏移} & \tabhead{类型} & \tabhead{字段} \\
+\midrule
+0 & int32 & 整包长度（含 16 字节头） \\
+4 & int16 & 头长度，固定 16 \\
+6 & int16 & 协议版本：0/1 JSON，2 deflate，3 brotli \\
+8 & int32 & operation：2 心跳 / 3 心跳回 / 5 消息 / 7 鉴权 / 8 鉴权成功 \\
+12 & int32 & sequence \\
+16 & bytes & 包体 \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+处理流程是：
+
+\begin{enumerate}
+  \item 连接成功后先发 \code{op = 7} 的鉴权包；
+  \item 用 \code{splitPackets()} 按 16 字节包头切包；
+  \item \code{ver = 2} 时用 \code{DecompressionStream('deflate')} 解压，
+        失败再试 \code{'deflate-raw'}；
+  \item 解压出来的仍然是“包头 + 包体”，所以递归回到切包函数；
+  \item 只处理 \code{cmd === 'DANMU\_MSG'}：\code{info[1]} 是文本，
+        \code{info[2][0]} 是 uid，\code{info[2][1]} 是昵称；
+  \item 每 30 秒发一次 \code{op = 2} 心跳包。
+\end{enumerate}
+
+\begin{keybox}[为什么解压之后要递归]
+服务器压缩的不是“一条消息”，而是一整段完整的包序列。解压后可能还是多个包，
+甚至还有压缩包。所以必须递归解帧，直到全部变成 JSON。项目里加了深度上限，
+防止异常数据导致无限递归。
+\end{keybox}
+
+\subsection{参与池与公平抽奖}
+
+参与池使用 \code{Map<uid, entry>}：
+
+\begin{itemize}
+  \item 关键词为空时所有人都参与；
+  \item 多个关键词之间是“或”的关系；
+  \item 同一个人发多条弹幕只算一个人，重复发言只增加 \code{count}。
+\end{itemize}
+
+抽奖使用部分 Fisher--Yates：只在副本上做前 N 次交换，保证结果不重复。
+随机数优先使用 \code{crypto.}\allowbreak\code{getRandomValues}，并用拒绝采样去掉取模偏差。
+点“开始抽奖”时会清空上一轮参与池，避免第二轮抽到历史总人数。
+
+\begin{keybox}[为什么不能用 \code{sort(random)} 洗牌]
+\code{sort(() => Math.random() - 0.5)} 的比较函数不满足传递性，
+不同元素被换到各位置的概率不均等，抽奖结果有偏。Fisher--Yates 从后往前，
+每次和前面随机位置交换，才是公平的。
+\end{keybox}
+
+\subsection{状态管理与持久化}
+
+\code{store.js} 是唯一状态源，保存语言、主题、Cookie、用户信息、多套配置和抽奖历史。
+读取本地存储时一定用 \code{try/catch}，并把旧数据和默认值合并，
+以后新增字段不会让旧数据把页面弄崩。配置文件、历史、主题、语言会跨刷新保留；
+连接状态、参与池和弹幕日志不写入存储。
+
+\subsection{多房间与主题}
+
+多房间使用一个房间一条 WebSocket 的方式，由 \code{RoomManager} 管理。
+所有房间共用一个参与池，每条记录保存 \code{rooms: Set<roomId>}，
+另建 \code{Map<roomId, Set<uid>>} 反查索引。断开某个房间时只移除该房间的贡献，
+同时在别的房间发过弹幕的人会留在池子里。
+
+主题使用 CSS 变量：切换时只改 \code{<html data-theme>} 和主题色变量，
+不需要给每个元素写两套样式。主题色支持 4 套预设和自定义取色；自定义颜色会
+自动计算深色版本和深浅模式用的半透明色。切换瞬间会临时关闭过渡，避免整页重绘掉帧。
+
+% =====================================================================
+\section{遇到的问题与解决}
+% =====================================================================
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}l X@{}}
+\toprule
+\tabhead{问题} & \tabhead{解决思路} \\
+\midrule
+直接请求 B 站被 CORS 拦截 & 改用 \code{/api}、\code{/live}、\code{/passport} 相对路径，走本地转发服务 \\
+\code{Cookie} 无法设置 & 页面用 \code{X-Cookie}，服务端再转成 \code{Cookie} 头 \\
+\code{getDanmuInfo} 返回 \code{-352} & 实现 WBI 签名，并在失败时退到公共弹幕节点 \\
+解压后还是二进制 & 压缩的是包序列，解压后递归回切包函数 \\
+连接状态和界面不一致 & 先拆后建、界面镜像 socket 状态、失败分支必须收尾 \\
+头像裂图 & \code{referrerpolicy="no-referrer"} + 昵称首字渐变头像回退 \\
+主题切换掉帧 & 切换瞬间关闭过渡，减少大面积毛玻璃和热路径颜色计算 \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+% =====================================================================
+\section{总结与体会}
+% =====================================================================
+
+这次实习让我把一个前端页面从“能显示”推进到了“能真正处理实时数据”。
+最大的收获不是写页面，而是理解了浏览器、转发服务、B 站接口和 WebSocket 之间的关系：
+
+\begin{itemize}
+  \item 页面不能直接跨域访问 B 站，必须通过本地转发服务；
+  \item B 站接口有 HTTP 状态码和业务 \code{code} 两层结果，必须分开处理；
+  \item 弹幕是二进制协议，要按包头切包、按版本解压、递归处理；
+  \item 参与池必须按 uid 去重，抽奖必须使用公平洗牌；
+  \item 状态必须有单一数据源，界面不能偷偷保存一份自己的状态；
+  \item 网络程序必须考虑断线、超时、重连和用户随时停止操作。
+\end{itemize}
+
+目前仍有几处可以继续完善：\code{b23.tv} 短链尚未展开；Cookie 存在
+\code{localStorage} 只适合本地练习；演示部分还可以补一段真实直播间的完整录屏。
+后续如果继续迭代，我会优先补充自动化测试、短链解析和更完善的错误提示。
+
+\section{补充技术实现}
+
+在核心链路完成之后，我又根据实际使用体验做了几处补充和调整。
+
+\subsection{主题色自定义取色}
+
+主题色最初只有 4 套预设。后来加入了原生取色器：预设色块旁边有一个彩虹圆点，
+点击后可以选择任意颜色。自定义颜色会立即应用到按钮、选中态和渐变等位置，
+并保存到 \code{localStorage}，刷新后仍然保留。
+
+实现上没有写死第二套主题，而是把自定义颜色转换成一组 CSS 变量：
+
+\begin{itemize}
+  \item \code{--accent}：用户选择的主色；
+  \item \code{--accent-strong}：加深后的颜色，用于渐变和强调；
+  \item \code{--accent-soft-light} / \code{--accent-soft-dark}：浅色和深色模式下的柔和底色；
+  \item \code{--accent-tint-light} / \code{--accent-tint-dark}：半透明着色；
+  \item \code{--accent-ink}：根据颜色的亮度自动选择白色或深色文字。
+\end{itemize}
+
+对于自定义颜色，文字和徽章的对比色不写死：\code{web/js/main.js} 的
+\code{luminance()} 计算颜色的相对亮度，亮度大于 0.6 时使用深色 \code{#10131a}，
+否则使用白色 \code{#ffffff}，结果存入 \code{--accent-ink}。
+
+这样预设主题和自定义颜色可以无缝切换。选中的色块显示黑色圆环和白色对勾，
+自定义取色也走同一套选中状态。
+
+\subsection{多房间合并池}
+
+多房间是后期补充的重点功能。B 站没有“一条连接听多个房间”的能力，所以实现方式是
+一个房间一条 WebSocket，由 \code{RoomManager} 统一管理。数据层把多个房间的弹幕
+放进同一个参与池：
+
+\begin{itemize}
+  \item \code{entries: Map<uid, entry>} 是主索引，同一个人只算一条记录；
+  \item 每条记录保存 \code{rooms: Set<roomId>}，表示这个人出现在哪些房间；
+  \item \code{byRoom: Map<roomId, Set<uid>>} 是反查索引，用来统计和移除单个房间；
+  \item 断开某个房间时只移除该房间的贡献；如果这个人也在别的房间发过弹幕，他仍然留在池子里；
+  \item 按房间抽奖时使用 \code{taken} 集合，保证同一个人不会在两个房间重复中奖。
+\end{itemize}
+
+这套结构解决了“合并成一个池子”和“房间之间互不干扰”两个问题。
+
+\subsection{名单与设置页布局调整}
+
+中奖名单原来使用两列窄卡片，长昵称会被挤成竖排。后来改成一行一个中奖者的横向布局：
+序号、完整昵称、标签和 uid 按顺序排列，昵称占主要宽度，长昵称可以正常换行，
+不会再出现一个字一行的现象。
+
+设置页也做了布局调整：左列是“账号 → 抽奖历史”，中间是“配置方案”，
+右侧是“外观”。这样查看历史时不需要往下滚很久，同时保留了原来的卡片样式和网格规则。
+
+\subsection{自定义背景与主题性能}
+
+自定义背景图使用 canvas 先压缩，再转成 JPEG 保存到 \code{localStorage}，
+避免手机照片直接超过存储上限。后期把自定义背景下的毛玻璃效果调弱了：
+
+\begin{itemize}
+  \item 顶栏模糊从 18px 降到 10px，饱和度从 1.6 降到 1.25；
+  \item 壁纸暗色遮罩和浅色 / 深色蒙层的不透明度降低，背景图更清楚；
+  \item 主题切换瞬间临时关闭过渡，避免整页重绘造成掉帧。
+\end{itemize}
+
+\subsection{登录态封装与过期处理}
+
+登录 Cookie 不再作为裸字符串永久保存，而是封装成带时间信息的会话对象：
+
+\begin{itemize}
+  \item 保存 \code{savedAt}、\code{checkedAt}、\code{expiresAt} 三个时间戳；
+  \item 页面启动和长时间空闲后，会自动调用 \code{/api/x/space/myinfo} 校验会话；
+  \item 任何接口返回 \code{-101} 未登录时，广播会话过期事件，清空 Cookie 和用户信息，
+        提示重新登录；
+  \item \code{getDanmuInfo} 返回的 token 不写入本地存储，每次连接弹幕前按需重新获取。
+\end{itemize}
+
+这样处理的目的是把 Cookie 从“只存不查”的原始字符串，变成有验证、有清理、有过期提示的
+会话状态，避免服务端 Cookie 已经失效但页面仍显示已登录的情况。
+
+\subsection{转发服务与题目仓库一致}
+
+最终提交的 \code{server/} 保持题目原版：
+
+\begin{itemize}
+  \item \code{server/main.go}、\code{go.mod}、\code{go.sum} 与题目 GitHub 仓库的
+        \code{BingyanFE-Practice} 分支一致；
+  \item 转发服务只负责静态托管、B 站接口反向代理和 WebSocket 二进制中转；
+  \item 解帧、解压、参与池、抽奖和界面逻辑全部在 \code{web/} 前端完成。
+\end{itemize}
+
+\section{展示：启动与运行流程}
+
+展示时可以直接双击项目根目录的 \code{start.bat}。它会自动完成端口检查、启动服务和
+打开页面三步。
+
+\subsection{端口检查}
+
+脚本先检查 8787 端口：
+
+\begin{itemize}
+  \item 如果 8787 已经在运行 GACHAGO，脚本不再启动第二个服务，直接打开页面；
+  \item 如果 8787 被别的程序占用，脚本自动改用 8788，避免两个项目冲突；
+  \item 如果 8787 空着，就正常在 8787 启动。
+\end{itemize}
+
+判断“是不是 GACHAGO”的方式是请求 \code{/js/store.js}，检查返回内容里有没有
+\code{gachago.state.v1} 这个存储键名。
+
+\subsection{自动打开浏览器}
+
+脚本用一条隐藏的 PowerShell 命令完成浏览器打开：
+
+\begin{lstlisting}[language=bash]
+start "" powershell -NoProfile -WindowStyle Hidden -Command ^
+  "for($i=0;$i -lt 40;$i++){ try { $c = New-Object Net.Sockets.TcpClient; ^
+   $c.Connect('127.0.0.1',8787); $c.Close(); break } ^
+   catch { Start-Sleep -Milliseconds 300 } }; Start-Process 'http://127.0.0.1:8787'"
+\end{lstlisting}
+
+它的逻辑是：
+
+\begin{enumerate}
+  \item \code{start} 在后台启动一个隐藏的 PowerShell 进程，这样批处理可以继续启动 Go 服务；
+  \item PowerShell 每隔 300ms 尝试连接一次 \code{127.0.0.1:8787}，最多试 40 次（约 12 秒）；
+  \item 端口通了以后执行 \code{Start-Process 'http://127.0.0.1:8787'}，
+        由 Windows 调用默认浏览器打开页面；
+  \item 同时批处理在前台执行 \code{go run . -addr 127.0.0.1:8787 -web ../web}，
+        这个窗口就是服务本身，关闭窗口服务就停止。
+\end{enumerate}
+
+如果浏览器没有自动打开，也可以手动访问 \code{http://127.0.0.1:8787}。
+
+\end{document}

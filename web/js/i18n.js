@@ -97,6 +97,7 @@ const DICT = {
 		"account.login": "登录",
 		"account.logout": "退出登录",
 		"account.loggedIn": "已登录",
+		"account.expired": "登录已过期，请重新登录",
 
 		"sets.title": "配置方案",
 		"sets.create": "新建",
@@ -270,6 +271,7 @@ const DICT = {
 		"account.login": "Sign in",
 		"account.logout": "Sign out",
 		"account.loggedIn": "Signed in",
+		"account.expired": "Session expired, please sign in again",
 
 		"sets.title": "Presets",
 		"sets.create": "New",

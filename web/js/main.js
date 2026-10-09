@@ -245,6 +245,7 @@ function boot() {
 	drawView.wire();
 	settingsView.wire();
 	account.render();
+	account.validateSession();
 	settingsView.refresh();
 
 	// Nav tabs.
@@ -282,7 +283,10 @@ function boot() {
 	// A tab that stays open overnight should not keep a stale "reconnecting"
 	// pill on screen when the browser restores it.
 	document.addEventListener("visibilitychange", () => {
-		if (!document.hidden) applyTheme();
+		if (!document.hidden) {
+			applyTheme();
+			account.validateSession();
+		}
 	});
 }
 
